@@ -1,0 +1,54 @@
+import os
+import PhotoScan
+
+def main():
+
+	print("Script started")
+	
+	doc = PhotoScan.app.document
+	chunk = PhotoScan.Chunk()
+	chunk.label = "New Chunk"
+	doc.chunks.add(chunk)
+
+
+	path_photos = PhotoScan.app.getExistingDirectory("Specify folder with input photos:")
+	path_photos += "/"
+	
+	#checking save filename
+	project_path = PhotoScan.app.getSaveFileName("Specify project filename for saving:")
+	if not project_path:
+		print("Script aborted")
+		return 0
+	
+	if proejct_path[-4:].lower() != ".psz":
+		project_path += ".psz"
+	
+	#adding photos
+	image_list = os.listdir(path_photos)
+	for photo in image_list:
+		if ("jpg" or "jpeg" or "tif" or "png") in photo.lower():
+			chunk.photos.add(path_photos + photo)
+	PhotoScan.app.update()
+	
+	#align photos
+	chunk.matchPhotos(accuracy = "high", preselection = "generic", filter_mask = False, point_limit = 50000)
+	chunk.alignPhotos()
+	
+	#build dense cloud
+	chunk.buildDenseCloud(quality = "high", filter = "aggressive")
+	
+	#build mesh
+	chunk.buildModel(surface = "arbitrary", source = "dense", interpolation = "enabled", faces = "high")
+	
+	#build texture
+	chunk.buildTexture(mapping = "adaptive", blending = "mosaic", color_correction = False, size = 4096, count = 1
+	
+	#save
+	doc.save(project_path)
+	
+	PhotoScan.app.update()
+	print("Script finished")
+	return 1
+	
+	
+PhotoScan.app.addMenuItem("Custom menu/Process photos", main)	
