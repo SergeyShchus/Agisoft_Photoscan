@@ -1,0 +1,2 @@
+for key in camera.photo.meta.keys():
+      print(": ".join([key, camera.photo.meta[key]]))
