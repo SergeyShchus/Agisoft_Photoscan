@@ -1,0 +1,11 @@
+import PhotoScan
+
+chunk = PhotoScan.app.document.chunk
+photos = set()
+for camera in list(chunk.cameras):
+      if camera.photo.path in photos:
+             chunk.remove(camera)
+      else:
+             photos.add(camera.photo.path)
+
+print("Script finished")
