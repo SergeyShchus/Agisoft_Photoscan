@@ -1,0 +1,42 @@
+import os
+import PhotoScan
+
+global doc
+doc = PhotoScan.app.document
+	
+#path to photos
+path_photos = PhotoScan.app.getExistingDirectory("Specify input photo folder:")
+	
+print("Script started")
+
+#creating new chunk
+doc.addChunk()
+chunk = doc.chunks[-1]
+chunk.label = "New Chunk"
+
+project_path = PhotoScan.app.getSaveFileName("Specify project filename for saving (by .psz):")
+project_path2 = PhotoScan.app.getSaveFileName("Specify project filename for saving (by .psx):")
+if not project_path:
+	print("Script aborted")
+	
+if project_path[-4:].lower() != ".psz":
+	project_path += ".psz"
+		
+#loading images
+image_list = os.listdir(path_photos)
+photo_list = list()
+for photo in image_list:
+	if ("jpg" or "jpeg" or "tif" or "png") in photo.lower():
+		photo_list.append(path_photos + "\\" + photo)
+chunk.addPhotos(photo_list)
+chunk.matchPhotos(accuracy=PhotoScan.HighAccuracy, preselection=PhotoScan.GenericPreselection)
+chunk.alignCameras()
+chunk.buildDenseCloud(quality=PhotoScan.HighQuality)
+chunk.buildModel(surface=PhotoScan.Arbitrary, interpolation=PhotoScan.EnabledInterpolation)
+chunk.buildUV(mapping=PhotoScan.GenericMapping)
+chunk.buildTexture(blending=PhotoScan.MosaicBlending, size=4096)
+doc.save(project_path2)
+chunk.buildOrthomosaic(surface=PhotoScan.DataSource.ModelData,blending=PhotoScan.BlendingMode.MosaicBlending,color_correction=False)
+chunk.exportOrthomosaic(project_path + "Export/" +  "_Ortho.tif", format="tif")
+PhotoScan.app.update()
+print("Script finished")
